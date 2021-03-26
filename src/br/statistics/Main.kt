@@ -75,6 +75,8 @@ interface Main {
                     val date = getDate(nextLine)
                     if (!RECENT_MODE || Kaidan2Stat.NOW - date <= recentPeriod) {
                         kaidan1Stat.computeIfAbsent(interestedContributor) { ArrayList() }.add(date)
+                    } else {
+                        break
                     }
                 }
                 i++
