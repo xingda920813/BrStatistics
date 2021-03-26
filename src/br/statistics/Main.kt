@@ -3,11 +3,12 @@ package br.statistics
 import java.io.FileWriter
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.TreeSet
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+
+const val RECENT_MODE = true
 
 class Kaidan2Stat(private val mContributor: String, private val mBrCount: Int, joinTime: Long) : Comparable<Kaidan2Stat> {
 
@@ -15,7 +16,11 @@ class Kaidan2Stat(private val mContributor: String, private val mBrCount: Int, j
     private val mDensity = mBrCount.toDouble() / mJoinWeeks
 
     override fun compareTo(other: Kaidan2Stat): Int {
-        return other.mDensity.compareTo(mDensity)
+        return if (RECENT_MODE) {
+            other.mBrCount.compareTo(mBrCount)
+        } else {
+            other.mDensity.compareTo(mDensity)
+        }
     }
 
     override fun toString(): String {
@@ -24,7 +29,7 @@ class Kaidan2Stat(private val mContributor: String, private val mBrCount: Int, j
 
     companion object {
 
-        val NOW = System.currentTimeMillis() / 1000
+        val NOW = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
     }
 }
 
@@ -33,9 +38,10 @@ interface Main {
     companion object {
 
         // git log --date raw
-        private val PATH_FULL_LOG = TODO() as String
-        private val PATH_CONTRIBUTORS = TODO() as String
-        private val PATH_OUTPUT = TODO() as String
+        private const val PATH_FULL_LOG = "C:\\Users\\TODO\\Desktop\\full_log.txt"
+        private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.txt"
+        private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
+        private val recentPeriod = TimeUnit.SECONDS.convert(30, TimeUnit.DAYS)
 
         @JvmStatic
         fun main(args: Array<String>) {
@@ -67,15 +73,18 @@ interface Main {
                     val nextLine = lines[i + 1]
                     require(nextLine?.startsWith("Date:") == true)
                     val date = getDate(nextLine)
-                    kaidan1Stat.computeIfAbsent(interestedContributor) { ArrayList() }.add(date)
+                    if (!RECENT_MODE || Kaidan2Stat.NOW - date <= recentPeriod) {
+                        kaidan1Stat.computeIfAbsent(interestedContributor) { ArrayList() }.add(date)
+                    }
                 }
                 i++
             }
-            val kaidan2Stat = TreeSet<Kaidan2Stat>()
+            val kaidan2Stat = ArrayList<Kaidan2Stat>()
             for ((contributor, kiroku) in kaidan1Stat) {
                 kiroku.sort()
                 kaidan2Stat.add(Kaidan2Stat(contributor, kiroku.size, kiroku[0]))
             }
+            kaidan2Stat.sort()
             FileWriter(PATH_OUTPUT).use { writer ->
                 writer.write("Contributor,BrCount,JoinWeeks,Density")
                 writer.write("\n")
