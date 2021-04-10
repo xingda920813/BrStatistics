@@ -1,1 +1,7 @@
 out/
+build/
+.gradle/6.8/
+.gradle/buildOutputCleanup/
+.gradle/checksums/
+.gradle/configuration-cache/
+.gradle/vcs-1/
