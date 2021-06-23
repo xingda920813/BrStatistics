@@ -41,7 +41,7 @@ interface Main {
         private const val PATH_FULL_LOG = "C:\\Users\\TODO\\Desktop\\full_log.txt"
         private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.txt"
         private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
-        private val recentPeriod = TimeUnit.SECONDS.convert(30, TimeUnit.DAYS)
+        private val recentPeriod = TimeUnit.SECONDS.convert(60, TimeUnit.DAYS)
 
         @JvmStatic
         fun main(args: Array<String>) {
