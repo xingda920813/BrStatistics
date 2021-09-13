@@ -10,7 +10,10 @@ import java.util.stream.Collectors
 private const val PATH_FULL_LOG = "C:\\Users\\TODO\\Desktop\\full_log.txt"
 private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.txt"
 private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
-private val dataCollector = RecentBrDataCollector(TimeUnit.SECONDS.convert(60, TimeUnit.DAYS))
+
+// switch mode below
+//private val dataCollector = RecentBrComparisonCollector(TimeUnit.SECONDS.convert(60, TimeUnit.DAYS))
+private val dataCollector = TotalBrForAllContributorsCollector()
 
 val now = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 
