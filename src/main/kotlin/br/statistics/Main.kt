@@ -5,19 +5,16 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 // git log --date raw
 private const val PATH_FULL_LOG = "C:\\Users\\TODO\\Desktop\\full_log.txt"
 private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.txt"
 private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
-val recentPeriod = TimeUnit.SECONDS.convert(60, TimeUnit.DAYS)
+private val dataCollector = RecentBrDataCollector(TimeUnit.SECONDS.convert(60, TimeUnit.DAYS))
 
-private val now = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+val now = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 
 fun main() {
-    val kaidan1Stat = HashMap<String, Int>()
     val contributors = Files
         .readAllLines(Paths.get(PATH_CONTRIBUTORS))
         .stream()
@@ -45,25 +42,20 @@ fun main() {
             val nextLine = lines[i + 1]
             require(nextLine?.startsWith("Date:") == true)
             val date = getDate(nextLine)
-            if (now - date <= recentPeriod) {
-                val oldBrCount = kaidan1Stat[interestedContributor]
-                kaidan1Stat[interestedContributor] = if (oldBrCount != null) oldBrCount + 1 else 1
+            if (dataCollector.shouldContinueSearchGitLog(date)) {
+                dataCollector.onInterestedRecordFound(interestedContributor, date)
             } else {
                 break
             }
         }
         i++
     }
-    val kaidan2Stat = ArrayList<Kaidan2Stat>()
-    for ((contributor, brCount) in kaidan1Stat) {
-        kaidan2Stat.add(Kaidan2Stat(contributor, brCount))
-    }
-    kaidan2Stat.sort()
+    val records = dataCollector.postProcess()
     FileWriter(PATH_OUTPUT).use { writer ->
-        writer.write("Contributor,BrCount,Density")
+        writer.write(dataCollector.tableHeaders.joinToString(","))
         writer.write("\n")
-        for (stat in kaidan2Stat) {
-            writer.write(stat.toString())
+        for (record in records) {
+            writer.write(record.data.joinToString(","))
             writer.write("\n")
         }
     }
