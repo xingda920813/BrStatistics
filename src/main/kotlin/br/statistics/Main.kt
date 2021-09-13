@@ -12,14 +12,12 @@ import kotlin.collections.HashMap
 private const val PATH_FULL_LOG = "C:\\Users\\TODO\\Desktop\\full_log.txt"
 private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.txt"
 private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
+val recentPeriod = TimeUnit.SECONDS.convert(60, TimeUnit.DAYS)
 
-const val RECENT_MODE = true
-private val recentPeriod = TimeUnit.SECONDS.convert(60, TimeUnit.DAYS)
-
-val nowInSeconds = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
+private val now = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 
 fun main() {
-    val kaidan1Stat = HashMap<String, ArrayList<Long>>()
+    val kaidan1Stat = HashMap<String, Int>()
     val contributors = Files
         .readAllLines(Paths.get(PATH_CONTRIBUTORS))
         .stream()
@@ -47,8 +45,9 @@ fun main() {
             val nextLine = lines[i + 1]
             require(nextLine?.startsWith("Date:") == true)
             val date = getDate(nextLine)
-            if (!RECENT_MODE || nowInSeconds - date <= recentPeriod) {
-                kaidan1Stat.computeIfAbsent(interestedContributor) { ArrayList() }.add(date)
+            if (now - date <= recentPeriod) {
+                val oldBrCount = kaidan1Stat[interestedContributor]
+                kaidan1Stat[interestedContributor] = if (oldBrCount != null) oldBrCount + 1 else 1
             } else {
                 break
             }
@@ -56,13 +55,12 @@ fun main() {
         i++
     }
     val kaidan2Stat = ArrayList<Kaidan2Stat>()
-    for ((contributor, kiroku) in kaidan1Stat) {
-        kiroku.sort()
-        kaidan2Stat.add(Kaidan2Stat(contributor, kiroku.size, kiroku[0]))
+    for ((contributor, brCount) in kaidan1Stat) {
+        kaidan2Stat.add(Kaidan2Stat(contributor, brCount))
     }
     kaidan2Stat.sort()
     FileWriter(PATH_OUTPUT).use { writer ->
-        writer.write("Contributor,BrCount,JoinWeeks,Density")
+        writer.write("Contributor,BrCount,Density")
         writer.write("\n")
         for (stat in kaidan2Stat) {
             writer.write(stat.toString())
