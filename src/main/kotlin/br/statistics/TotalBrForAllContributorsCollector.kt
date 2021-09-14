@@ -11,9 +11,7 @@ private class TotalKaidan2Stat(private val calendar: Calendar, brCount: Int, wee
     private val date = dateFormat.format(Date(calendar.timeInMillis))
     private val density = brCount.toDouble() / weeks
 
-    override fun compareTo(other: TotalKaidan2Stat): Int {
-        return calendar.timeInMillis.compareTo(other.calendar.timeInMillis)
-    }
+    override fun compareTo(other: TotalKaidan2Stat) = calendar.timeInMillis.compareTo(other.calendar.timeInMillis)
 
     override val data = listOf(date, brCount.toString(), String.format("%.2f", density))
 }
