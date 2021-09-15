@@ -8,30 +8,63 @@ import java.util.*;
 
 public interface IKnowMyType2<K, V> {
 
-    default Pair<Class<K>, Class<V>> getGenericTypes() {
+    final class ClassNode<T> {
+
+        public final Class<T> mRoot;
+        public final ArrayList<ClassNode<?>> mChildren = new ArrayList<>();
+
+        ClassNode(Class<T> root) {
+            mRoot = root;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof ClassNode)) return false;
+            ClassNode<?> other = (ClassNode<?>) o;
+            return mRoot.equals(other.mRoot) && mChildren.equals(other.mChildren);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(mRoot, mChildren);
+        }
+
+        @Override
+        public String toString() {
+            return "ClassNode{mRoot=" + mRoot + ", mChildren=" + mChildren + '}';
+        }
+    }
+
+    default Pair<ClassNode<K>, ClassNode<V>> getGenericTypes() {
         for (final Type interfaceType : getClass().getGenericInterfaces()) {
             if (!(interfaceType instanceof ParameterizedType)) continue;
             final ParameterizedType parameterizedInterface = (ParameterizedType) interfaceType;
             if (parameterizedInterface.getRawType() != IKnowMyType2.class) continue;
             final Type[] actualTypeArguments = parameterizedInterface.getActualTypeArguments();
-            return new Pair<>(getClass(actualTypeArguments[0]), getClass(actualTypeArguments[1]));
+            return new Pair<>(getClassTree(actualTypeArguments[0]), getClassTree(actualTypeArguments[1]));
         }
         return null;
     }
 
     @SuppressWarnings("unchecked")
-    static <T> Class<T> getClass(Type type) {
-        if (type instanceof Class<?>) return (Class<T>) type;
-        if (type instanceof ParameterizedType) return (Class<T>) ((ParameterizedType) type).getRawType();
-        if (type instanceof WildcardType) return getClass(((WildcardType) type).getUpperBounds()[0]);
-        if (type instanceof TypeVariable<?>) return getClass(((TypeVariable<?>) type).getBounds()[0]);
-        if (type instanceof GenericArrayType) return (Class<T>) getArrayClass(getClass(((GenericArrayType) type).getGenericComponentType()));
+    static <T> ClassNode<T> getClassTree(Type type) {
+        if (type instanceof Class<?>) return new ClassNode<>((Class<T>) type);
+        if (type instanceof ParameterizedType) {
+            final ParameterizedType parameterizedType = (ParameterizedType) type;
+            final ClassNode<T> tree = getClassTree(parameterizedType.getRawType());
+            for (final Type actualTypeArgument : parameterizedType.getActualTypeArguments()) tree.mChildren.add(getClassTree(actualTypeArgument));
+            return tree;
+        }
+        if (type instanceof WildcardType) return getClassTree(((WildcardType) type).getUpperBounds()[0]);
+        if (type instanceof TypeVariable<?>) return getClassTree(((TypeVariable<?>) type).getBounds()[0]);
+        if (type instanceof GenericArrayType) {
+            final ClassNode<?> componentTree = getClassTree(((GenericArrayType) type).getGenericComponentType());
+            final ClassNode<T> tree = new ClassNode<>((Class<T>) Array.newInstance(componentTree.mRoot, 0).getClass());
+            tree.mChildren.add(componentTree);
+            return tree;
+        }
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T> Class<T[]> getArrayClass(Class<T> componentType) {
-        return (Class<T[]>) Array.newInstance(componentType, 0).getClass();
     }
 
     static void main(String... args) {
@@ -44,6 +77,8 @@ public interface IKnowMyType2<K, V> {
         class VariableArray<K extends Integer & Serializable, V extends String & Serializable>
                 extends HashMap<K[][], V[][]> implements IKnowMyType2<K[][], V[][]> {}
         class OneTypeParameter extends ArrayList<Integer> implements IKnowMyType2<Integer, Void> {}
+        class Nested<T extends List<Integer> & IKnowMyType2<Integer, Void>> extends ArrayList<T> implements IKnowMyType2<T, Void> {}
+        class MoreNested<T extends List<List<Integer>>> extends ArrayList<T> implements IKnowMyType2<T, Void> {}
         System.out.println(new Clazz().getGenericTypes());
         System.out.println(new Parameterized().getGenericTypes());
         System.out.println(new Wildcard().getGenericTypes());
@@ -51,5 +86,7 @@ public interface IKnowMyType2<K, V> {
         System.out.println(new ParameterizedArray().getGenericTypes());
         System.out.println(new VariableArray<Integer, String>().getGenericTypes());
         System.out.println(new OneTypeParameter().getGenericTypes().getFirst());
+        System.out.println(new Nested<OneTypeParameter>().getGenericTypes().getFirst());
+        System.out.println(new MoreNested<>().getGenericTypes().getFirst());
     }
 }
