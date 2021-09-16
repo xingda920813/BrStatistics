@@ -18,20 +18,20 @@ public interface IKnowMyType2<K, V> {
         }
 
         @Override
-        public boolean equals(Object o) {
+        public final boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof ClassNode)) return false;
-            ClassNode<?> other = (ClassNode<?>) o;
+            final ClassNode<?> other = (ClassNode<?>) o;
             return mRoot.equals(other.mRoot) && mChildren.equals(other.mChildren);
         }
 
         @Override
-        public int hashCode() {
+        public final int hashCode() {
             return Objects.hash(mRoot, mChildren);
         }
 
         @Override
-        public String toString() {
+        public final String toString() {
             return "ClassNode{mRoot=" + mRoot + ", mChildren=" + mChildren + '}';
         }
     }
