@@ -12,8 +12,8 @@ private const val PATH_CONTRIBUTORS = "C:\\Users\\TODO\\Desktop\\contributors.tx
 private const val PATH_OUTPUT = "C:\\Users\\TODO\\Desktop\\output.csv"
 
 // switch mode below
-//private val dataCollector = RecentBrComparisonCollector(TimeUnit.SECONDS.convert(60, TimeUnit.DAYS))
-private val dataCollector = TotalBrForAllContributorsCollector()
+private val dataCollector = RecentBrComparisonCollector(TimeUnit.SECONDS.convert(180, TimeUnit.DAYS))
+//private val dataCollector = TotalBrForAllContributorsCollector()
 
 val now = TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS)
 
