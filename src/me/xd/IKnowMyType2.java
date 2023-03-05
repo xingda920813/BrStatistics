@@ -20,8 +20,7 @@ public interface IKnowMyType2<K, V> {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof ClassNode)) return false;
-            final ClassNode<?> other = (ClassNode<?>) o;
+            if (!(o instanceof ClassNode<?> other)) return false;
             return mRoot.equals(other.mRoot) && mChildren.equals(other.mChildren);
         }
 
@@ -38,8 +37,7 @@ public interface IKnowMyType2<K, V> {
 
     default Pair<ClassNode<K>, ClassNode<V>> getGenericTypes() {
         for (final Type interfaceType : getClass().getGenericInterfaces()) {
-            if (!(interfaceType instanceof ParameterizedType)) continue;
-            final ParameterizedType parameterizedInterface = (ParameterizedType) interfaceType;
+            if (!(interfaceType instanceof ParameterizedType parameterizedInterface)) continue;
             if (parameterizedInterface.getRawType() != IKnowMyType2.class) continue;
             final Type[] actualTypeArguments = parameterizedInterface.getActualTypeArguments();
             return new Pair<>(getClassTree(actualTypeArguments[0]), getClassTree(actualTypeArguments[1]));
@@ -50,8 +48,7 @@ public interface IKnowMyType2<K, V> {
     @SuppressWarnings("unchecked")
     static <T> ClassNode<T> getClassTree(Type type) {
         if (type instanceof Class<?>) return new ClassNode<>((Class<T>) type);
-        if (type instanceof ParameterizedType) {
-            final ParameterizedType parameterizedType = (ParameterizedType) type;
+        if (type instanceof ParameterizedType parameterizedType) {
             final ClassNode<T> tree = getClassTree(parameterizedType.getRawType());
             Arrays.stream(parameterizedType.getActualTypeArguments())
                   .map(IKnowMyType2::getClassTree)
@@ -93,9 +90,9 @@ public interface IKnowMyType2<K, V> {
         System.out.println(new Clazz().getGenericTypes());
         System.out.println(new Parameterized().getGenericTypes());
         System.out.println(new Wildcard().getGenericTypes());
-        System.out.println(new Variable<Integer, String>().getGenericTypes());
+        System.out.println(new Variable<>().getGenericTypes());
         System.out.println(new ParameterizedArray().getGenericTypes());
-        System.out.println(new VariableArray<Integer, String>().getGenericTypes());
+        System.out.println(new VariableArray<>().getGenericTypes());
         System.out.println(new OneTypeParameter().getGenericTypes().getFirst());
         System.out.println(new Nested<OneTypeParameter>().getGenericTypes().getFirst());
         System.out.println(new MoreNested<>().getGenericTypes().getFirst());

@@ -1,8 +1,4 @@
 out/
 build/
 .idea/
-.gradle/6.8/
-.gradle/buildOutputCleanup/
-.gradle/checksums/
-.gradle/configuration-cache/
-.gradle/vcs-1/
+.gradle/
