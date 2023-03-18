@@ -4,9 +4,8 @@
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
-        <option name="distributionType" value="DEFAULT_WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
-        <option name="gradleHome" value="$USER_HOME$/.gradle/wrapper/dists/gradle-6.4.1-bin/33549z180oh3o1s64iwo25l48/gradle-6.4.1" />
+        <option name="gradleJvm" value="temurin-19" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
